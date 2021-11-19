@@ -1,0 +1,12 @@
+.select{
+  background-color: white;
+}
+.select:hover{
+  background-color: whitesmoke;
+}
+
+.settings{
+  float: right;
+  background-color: white;
+  margin-top: 20px;
+}
