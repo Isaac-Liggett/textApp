@@ -135,10 +135,39 @@ app.get("/conversations", (req, res) => {
         res.status(404).send({ error: "database error" });
       } else {
         if (doc) {
-          Conversation.find({ participants: doc.username }, (err, doc) => {
+          Conversation.find({ participants: doc.username }, {_id: true, name: true}, (err, doc) => {
             if (err) {
               res.status(404).send({ error: "database error" });
             } else {
+              console.log(doc);
+              res.status(200).send(doc);
+            }
+          });
+        } else {
+          //invalid cookie
+          res.clearCookie("sess");
+          res.status(201).send({ pass: false, reason: "invalid cookie" });
+        }
+      }
+    });
+  } else {
+    res.status(201).send({ pass: false, reason: "no cookie" });
+  }
+});
+
+app.post("/conversations/texts", (req, res) => {
+  console.log("body: ", req.body);
+  if (req.cookies.sess !== undefined) {
+    User.findOne({ keys: req.cookies.sess }, (err, doc) => {
+      if (err) {
+        res.status(404).send({ error: "database error" });
+      } else {
+        if (doc) {
+          Conversation.find({ participants: doc.username, _id: req.body.id }, {_id: true, name: true, messages: true}, (err, doc) => {
+            if (err) {
+              res.status(404).send({ error: "database error" });
+            } else {
+              console.log(doc);
               res.status(200).send(doc);
             }
           });

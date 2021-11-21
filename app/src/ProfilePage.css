@@ -1,0 +1,17 @@
+.profile-container{
+  width: 100vw;
+  height: 100vh;
+}
+
+.profile-container.contactsBar{
+  width: 30vw;
+}
+
+.profile-container.textsPane{
+  width: 60vw;
+  overflow: visible;
+}
+
+.profile-container.more-options{
+  width:10vw
+}
