@@ -8,14 +8,14 @@ const ContactsBar = ({ contacts }) => {
 
   return (
     <div className="contacts-container">
-      <h2>Contacts</h2>
-      <div className="pane">
+      <div className="contacts-pane">
+        <h2 style={{"padding-left": "0.5vw"}}>Contacts</h2>
         {contacts.map((contact, index)=>{
           //console.log(contact._id);
           return(
-            <Card onClick={()=>updateMessagePane(String(contact._id))} key={index} >
-              <h3 className="contact">{contact.name}</h3>
-            </Card>
+            <div onClick={()=>updateMessagePane(String(contact._id))} className="contact" key={index} >
+              <h3 className="">{contact.name}</h3>
+            </div>
           )
         })}
       </div>

@@ -11,7 +11,7 @@ export const SetCurrentConversations = React.createContext();
 const ProfilePage = () => {
 
   const [conversations, setConversations] = useState([{name: "Loading..."}]);
-  const [shownTextMessages, setShownTextMessages] = useState([]);
+  const [currentConversation, setCurrentConversation] = useState({name: "", messages: []});
   const [currentUser, setCurrentUser] = useState();
 
   const updateMessagePane = async (convo_id) => {
@@ -22,7 +22,7 @@ const ProfilePage = () => {
           window.location.href = "http://localhost:3000/login";
         }
       }else{
-        setShownTextMessages(data[0].messages);
+        setCurrentConversation(data[0]);
       }
     })
   }  
@@ -53,12 +53,12 @@ const ProfilePage = () => {
 
   return(
     <SetCurrentConversations.Provider value={{updateMessagePane}}>
-      <div className="row profile-container">
+      <div className="row">
         <div className="col-sm-5 contactsBar">
           <ContactsBar contacts={conversations} />
         </div>
         <div className="col-lg-7 textsPane">
-          <TextsPane texts={shownTextMessages} currentUser={currentUser} />
+          <TextsPane texts={currentConversation.messages} currentUser={currentUser} currentConversationName={currentConversation.name} />
         </div>
       </div>
     </SetCurrentConversations.Provider>

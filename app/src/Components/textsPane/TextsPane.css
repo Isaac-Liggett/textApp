@@ -1,0 +1,12 @@
+.texts-container{
+  height: 100vh;
+  background-color: white;
+  width: 98%;
+}
+
+.convoName{
+  border: 1px solid #e6e6e6;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
