@@ -36,7 +36,7 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: req.body.password,
   });
-  console.log("register called: ", req.body);
+  // console.log("register called: ", req.body);
   User.create(newUser, (err) => {
     if (err) {
       console.log(err.message);
@@ -50,7 +50,7 @@ app.post("/register", (req, res) => {
         }
       }
     } else {
-      console.log("user created");
+      // console.log("user created");
       res.json({ message: "user created" });
     }
   });
@@ -60,7 +60,7 @@ app.post("/login", (req, res) => {
   //console.log(req.body)
   if (req.cookies.sess === undefined) {
     //user has logged in for the first time
-    console.log(req.body.username);
+    // console.log(req.body.username);
     User.findOne({ username: req.body.username }, (err, doc) => {
       if (err) {
         //handle error
@@ -69,9 +69,9 @@ app.post("/login", (req, res) => {
         if (doc) {
           if (doc.password == req.body.password) {
             //successful login
-            console.log(doc);
+            // console.log(doc);
             var cookie = makeid(12);
-            console.log(doc);
+            // console.log(doc);
             User.findOneAndUpdate(
               {username: doc.username, email: doc.email},
               { keys: [...doc.keys, cookie] },
@@ -94,7 +94,7 @@ app.post("/login", (req, res) => {
     });
   } else {
     //user has cookie
-    console.log("user has cookie");
+    // console.log("user has cookie");
     User.findOne({ keys: req.cookies.sess }, (err, doc) => {
       if (err) {
         //error
@@ -139,7 +139,7 @@ app.get("/conversations", (req, res) => {
             if (err) {
               res.status(404).send({ error: "database error" });
             } else {
-              console.log(doc);
+              // console.log(doc);
               res.status(200).send(doc);
             }
           });
@@ -156,7 +156,7 @@ app.get("/conversations", (req, res) => {
 });
 
 app.post("/conversations/texts", (req, res) => {
-  console.log("body: ", req.body);
+  console.log("accessed texts");
   if (req.cookies.sess !== undefined) {
     User.findOne({ keys: req.cookies.sess }, (err, doc) => {
       if (err) {
@@ -167,10 +167,55 @@ app.post("/conversations/texts", (req, res) => {
             if (err) {
               res.status(404).send({ error: "database error" });
             } else {
-              console.log(doc);
+              // console.log(doc);
               res.status(200).send(doc);
             }
           });
+        } else {
+          //invalid cookie
+          res.clearCookie("sess");
+          res.status(201).send({ pass: false, reason: "invalid cookie" });
+        }
+      }
+    });
+  } else {
+    res.status(201).send({ pass: false, reason: "no cookie" });
+  }
+});
+
+app.post("/conversations/texts/send", (req, res)=>{
+  console.log("accessed send", req.body)
+  if (req.cookies.sess !== undefined) {
+    console.log("has cookie")
+    User.findOne({ keys: req.cookies.sess }, (err, doc) => {
+      if (err) {
+        console.log('error');
+        res.status(404).send({ error: "database error" });
+      } else {
+        if (doc) {
+          console.log('doc found')
+          var username = doc.username;
+          Conversation.findById(req.body._id, (err, doc)=>{
+            console.log('find convo');
+            if(err){
+              console.log("error")
+              res.status(404).send({error: "there was a database error"})
+            }else{
+              if(doc){
+                console.log("found next doc");
+                Conversation.findByIdAndUpdate(req.body._id, {messages: [...doc.messages, {from: username, message: req.body.message}] }, (err, doc)=>{
+                  if(err){
+                    console.log("there was an error")
+                    res.status(500).send({error: "there was a database error"})
+                  }
+                })
+                res.status(200).send({"message": "updated conversation"});
+              }else{
+                res.status(500).send({error: "an unknown error has occured"})
+                console.log('unknown error');
+              }
+            }
+          })
         } else {
           //invalid cookie
           res.clearCookie("sess");

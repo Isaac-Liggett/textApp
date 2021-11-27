@@ -1,0 +1,29 @@
+.textbox-container{
+  bottom: 0;
+  position: absolute;
+  width: 56%;
+  margin: auto;
+  background-color: #f0f0f0;
+  border-radius: 20px 20px 0 0;
+}
+
+.textbox{
+  width: 90%;
+  height: 4vh;
+  margin: auto;
+  background-color: #f0f0f0;
+}
+
+.messagebox{
+  width: 90%;
+  height: inherit;
+  background-color: #e0dede;
+  color: black;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+}
+
+.textbox.btn{
+  width: 20%;
+}
