@@ -36,7 +36,7 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: req.body.password,
   });
-  // console.log("register called: ", req.body);
+
   User.create(newUser, (err) => {
     if (err) {
       console.log(err.message);
@@ -50,7 +50,6 @@ app.post("/register", (req, res) => {
         }
       }
     } else {
-      // console.log("user created");
       res.json({ message: "user created" });
     }
   });
@@ -73,7 +72,7 @@ app.post("/login", (req, res) => {
             var cookie = makeid(12);
             // console.log(doc);
             User.findOneAndUpdate(
-              {username: doc.username, email: doc.email},
+              { username: doc.username, email: doc.email },
               { keys: [...doc.keys, cookie] },
               (err) => {
                 if (err) {
@@ -114,19 +113,19 @@ app.post("/login", (req, res) => {
   }
 });
 
-app.get("/query-cookie", (req, res)=>{
-  User.findOne({keys: req.cookies.sess}, (error, doc)=>{
-    if(error){
-      res.status(500).send({error: "database error"});
-    }else{
-      if(doc){
-        res.status(200).send({username: doc.username, email: doc.email});
-      }else{
-        res.status(201).send({error: "no user with that cookie"});
+app.get("/query-cookie", (req, res) => {
+  User.findOne({ keys: req.cookies.sess }, (error, doc) => {
+    if (error) {
+      res.status(500).send({ error: "database error" });
+    } else {
+      if (doc) {
+        res.status(200).send({ username: doc.username, email: doc.email });
+      } else {
+        res.status(201).send({ error: "no user with that cookie" });
       }
     }
-  })
-})
+  });
+});
 
 app.get("/conversations", (req, res) => {
   if (req.cookies.sess !== undefined) {
@@ -135,14 +134,18 @@ app.get("/conversations", (req, res) => {
         res.status(404).send({ error: "database error" });
       } else {
         if (doc) {
-          Conversation.find({ participants: doc.username }, {_id: true, name: true}, (err, doc) => {
-            if (err) {
-              res.status(404).send({ error: "database error" });
-            } else {
-              // console.log(doc);
-              res.status(200).send(doc);
+          Conversation.find(
+            { participants: doc.username },
+            { _id: true, name: true },
+            (err, doc) => {
+              if (err) {
+                res.status(404).send({ error: "database error" });
+              } else {
+                // console.log(doc);
+                res.status(200).send(doc);
+              }
             }
-          });
+          );
         } else {
           //invalid cookie
           res.clearCookie("sess");
@@ -156,19 +159,70 @@ app.get("/conversations", (req, res) => {
 });
 
 app.post("/conversations/texts", (req, res) => {
-  console.log("accessed texts");
   if (req.cookies.sess !== undefined) {
     User.findOne({ keys: req.cookies.sess }, (err, doc) => {
       if (err) {
         res.status(404).send({ error: "database error" });
       } else {
         if (doc) {
-          Conversation.find({ participants: doc.username, _id: req.body.id }, {_id: true, name: true, messages: true}, (err, doc) => {
+          Conversation.find(
+            { participants: doc.username, _id: req.body.id },
+            { _id: true, name: true, messages: true },
+            (err, doc) => {
+              if (err) {
+                res.status(404).send({ error: "database error" });
+              } else {
+                res.status(200).send(doc);
+              }
+            }
+          );
+        } else {
+          //invalid cookie
+          res.clearCookie("sess");
+          res.status(201).send({ pass: false, reason: "invalid cookie" });
+        }
+      }
+    });
+  } else {
+    res.status(201).send({ pass: false, reason: "no cookie" });
+  }
+});
+
+app.post("/conversations/texts/send", (req, res) => {
+  if (req.cookies.sess !== undefined) {
+    User.findOne({ keys: req.cookies.sess }, (err, doc) => {
+      if (err) {
+        res.status(404).send({ error: "database error" });
+      } else {
+        if (doc) {
+          var username = doc.username;
+          Conversation.findById(req.body._id, (err, doc) => {
             if (err) {
-              res.status(404).send({ error: "database error" });
+              res.status(404).send({ error: "there was a database error" });
             } else {
-              // console.log(doc);
-              res.status(200).send(doc);
+              if (doc) {
+                Conversation.findByIdAndUpdate(
+                  req.body._id,
+                  {
+                    messages: [
+                      ...doc.messages,
+                      { from: username, message: req.body.message },
+                    ],
+                  },
+                  (err, doc) => {
+                    if (err) {
+                      console.log("there was an error");
+                      res
+                        .status(500)
+                        .send({ error: "there was a database error" });
+                    }
+                  }
+                );
+                res.status(200).send({ message: "updated conversation" });
+              } else {
+                res.status(500).send({ error: "an unknown error has occured" });
+                console.log("unknown error");
+              }
             }
           });
         } else {
@@ -183,39 +237,40 @@ app.post("/conversations/texts", (req, res) => {
   }
 });
 
-app.post("/conversations/texts/send", (req, res)=>{
-  console.log("accessed send", req.body)
+app.post("/check-user", (req, res) => {
+  User.findOne({ username: req.body.username }, (err, doc) => {
+    if (err) {
+      res.status(500).send({ error: "there was a database error" });
+    } else {
+      if (doc) {
+        res.status(200).send({ status: true });
+      } else {
+        res.status(200).send({ status: false });
+      }
+    }
+  });
+});
+
+app.post("/conversations/create", (req, res) => {
   if (req.cookies.sess !== undefined) {
-    console.log("has cookie")
     User.findOne({ keys: req.cookies.sess }, (err, doc) => {
       if (err) {
-        console.log('error');
         res.status(404).send({ error: "database error" });
       } else {
         if (doc) {
-          console.log('doc found')
-          var username = doc.username;
-          Conversation.findById(req.body._id, (err, doc)=>{
-            console.log('find convo');
-            if(err){
-              console.log("error")
-              res.status(404).send({error: "there was a database error"})
-            }else{
-              if(doc){
-                console.log("found next doc");
-                Conversation.findByIdAndUpdate(req.body._id, {messages: [...doc.messages, {from: username, message: req.body.message}] }, (err, doc)=>{
-                  if(err){
-                    console.log("there was an error")
-                    res.status(500).send({error: "there was a database error"})
-                  }
-                })
-                res.status(200).send({"message": "updated conversation"});
-              }else{
-                res.status(500).send({error: "an unknown error has occured"})
-                console.log('unknown error');
+          if (req.body.name != undefined && req.body.participants != undefined) {
+            Conversation.create(
+              { name: req.body.name, participants: req.body.participants, messages: [] },
+              (err) => {
+                if (err) {
+                  res.status(500).send({ error: "database error" });
+                }
               }
-            }
-          })
+            );
+            res.status(200).send({ message: "success" });
+          } else {
+            res.status(400).send({ error: "insufficient parameters supplied" });
+          }
         } else {
           //invalid cookie
           res.clearCookie("sess");

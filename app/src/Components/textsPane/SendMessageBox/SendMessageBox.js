@@ -12,7 +12,7 @@ const SendMessageBox = ({ conversationID, conversationName, rerender }) => {
     await fetch('/conversations/texts/send', {method: "POST", body: JSON.stringify({_id: conversationID, message: message}), headers: {'Content-Type': 'application/json'}}).then(()=>updateMessagePane(conversationID))
   }
 
-  if(conversationName === undefined){
+  if(conversationName === undefined || conversationName == ""){
     return <div />
   }
 

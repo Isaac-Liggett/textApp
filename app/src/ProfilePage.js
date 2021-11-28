@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import OptionsBar from "./Components/ProfilePage/Sidebar";
-import ContactsBar from "./Components/ProfilePage/ContactsBar";
+import ContactsBar from "./Components/ProfilePage/ContactsBar/ContactsBar";
 import TextsPane from "./Components/textsPane/TextsPane";
 import "./ProfilePage.css";
 
@@ -34,7 +33,7 @@ const ProfilePage = () => {
       });
   };
 
-  useEffect(async () => {
+  const updateConvoPane = async () => {
     await fetch("/conversations")
       .then((res) => res.json())
       .then((data) => {
@@ -50,18 +49,30 @@ const ProfilePage = () => {
     await fetch("/query-cookie")
       .then((res) => res.json())
       .then((data) => {
-        if (data.pass != undefined) {
-          if (data.pass == false) {
+        if (data.pass !== undefined) {
+          if (data.pass === false) {
             window.location.href = "http://localhost:3000/login";
           }
         } else {
           setCurrentUser(data.username);
         }
       });
-  }, []);
+  }
+
+  useEffect(() => {
+    let interval = setInterval(()=>{
+      if(currentConversation._id !== ""){
+        updateMessagePane(currentConversation._id);
+        updateConvoPane();
+      }else{
+        updateConvoPane();
+      }
+    }, 1000)
+    return ()=>clearInterval(interval);
+  });
 
   return (
-    <SetCurrentConversations.Provider value={{ updateMessagePane }}>
+    <SetCurrentConversations.Provider value={{ updateMessagePane, updateConvoPane, currentUser }}>
       <div className="row">
         <div className="col-sm-5 contactsBar">
           <ContactsBar contacts={conversations} />

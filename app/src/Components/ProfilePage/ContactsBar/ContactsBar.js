@@ -1,15 +1,15 @@
 import React, { useContext } from "react";
 import "./ContactsBar.css";
-import Card from "react-bootstrap/Card";
-import { SetCurrentConversations } from "../../ProfilePage";
+import { SetCurrentConversations } from "../../../ProfilePage";
+import AddConversationDropdown from "../AddConversationDropdown/AddConversationDropdown";
 
-const ContactsBar = ({ contacts }) => {
+const ContactsBar = ({ contacts, currentUser }) => {
   const { updateMessagePane } = useContext(SetCurrentConversations);
 
   return (
     <div className="contacts-container">
       <div className="contacts-pane">
-        <h2 style={{"padding-left": "0.5vw"}}>Contacts</h2>
+        <h2 style={{"padding-left": "0.5vw"}}>Contacts <AddConversationDropdown /></h2>
         {contacts.map((contact, index)=>{
           //console.log(contact._id);
           return(
